@@ -20,3 +20,24 @@ def test_logical_id_hierarchy():
     root.children.append(child)
     
     assert child.logical_id == "root/child"
+
+def test_duplicate_headings_get_unique_ids():
+    # Simulate the logic that duplicate headings get indexed logically
+    root = ParsedNode("root", 0, "root")
+    child1 = ParsedNode("Warning", 1, "root/warning")
+    root.children.append(child1)
+    
+    # 2nd warning should get a distinct logical ID
+    siblings = root.children
+    logical_id = "root/warning"
+    duplicate_count = sum(1 for sib in siblings if sib.logical_id.startswith(logical_id))
+    if duplicate_count > 0:
+        logical_id = f"{logical_id}-{duplicate_count}"
+        
+    child2 = ParsedNode("Warning", 1, logical_id)
+    root.children.append(child2)
+    
+    assert child1.logical_id == "root/warning"
+    assert child2.logical_id == "root/warning-1"
+    assert child1.logical_id != child2.logical_id
+

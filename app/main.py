@@ -33,7 +33,7 @@ def list_versions(doc_id: int, db: Session = Depends(get_db)):
     return doc.versions
 
 @app.get("/nodes", response_model=List[schemas.NodeDetailOut])
-def list_nodes(doc_id: int, version_number: int = None, db: Session = Depends(get_db)):
+def list_nodes(doc_id: int, version_number: int = None, search: str = None, db: Session = Depends(get_db)):
     doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -49,11 +49,17 @@ def list_nodes(doc_id: int, version_number: int = None, db: Session = Depends(ge
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")
         
-    # Get top level nodes
-    nodes = db.query(models.Node).filter(
-        models.Node.version_id == version.id,
-        models.Node.parent_id == None
-    ).all()
+    query = db.query(models.Node).filter(models.Node.version_id == version.id)
+    
+    if search:
+        # If searching, we return all matching nodes regardless of level
+        nodes = query.filter(
+            (models.Node.heading.ilike(f"%{search}%")) |
+            (models.Node.body_text.ilike(f"%{search}%"))
+        ).all()
+    else:
+        # Get top level nodes only if not searching
+        nodes = query.filter(models.Node.parent_id == None).all()
     
     return nodes
 
