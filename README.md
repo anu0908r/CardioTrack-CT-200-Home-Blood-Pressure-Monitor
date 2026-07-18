@@ -84,5 +84,4 @@ Retrieve the generation you created earlier. It will automatically compare the o
 curl -X GET "http://127.0.0.1:8000/selections/1/generations"
 ```
 
-## Approach & Decisions
-Please read `APPROACH.md` for my full decision log, including the reasoning behind using TinyDB and the PDF parser design choices.
+
